@@ -1,4 +1,4 @@
-package co.blastlab.cityhack.fb.model;
+package co.blastlab.cityhack.fb.fb;
 
 import lombok.Getter;
 import lombok.Setter;

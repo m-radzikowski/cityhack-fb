@@ -1,10 +1,11 @@
 package co.blastlab.cityhack.fb;
 
+import co.blastlab.cityhack.fb.dao.CommentDao;
 import co.blastlab.cityhack.fb.dao.WitRequestDao;
 import co.blastlab.cityhack.fb.dao.WitResponseDao;
-import co.blastlab.cityhack.fb.model.Comment;
-import co.blastlab.cityhack.fb.model.Model;
-import co.blastlab.cityhack.fb.model.PageId;
+import co.blastlab.cityhack.fb.fb.Comment;
+import co.blastlab.cityhack.fb.fb.Model;
+import co.blastlab.cityhack.fb.fb.PageId;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 public class HelloController {
@@ -31,22 +33,17 @@ public class HelloController {
 	 * Example request: http://localhost:8080/?postUrl=https://www.facebook.com/gdansk/posts/10160555313985424
 	 */
 	@GetMapping("/")
-	public List<Comment> index(@RequestParam String postUrl) throws MalformedURLException {
+	public List<CommentDao> index(@RequestParam String postUrl) throws MalformedURLException {
 		String pageId = findPageId(postUrl);
 		String postId = findPostId(postUrl);
 
 		String url = buildUrl(pageId, postId);
 
-		RestTemplate restTemplate = new RestTemplate();
-		Model model = restTemplate.getForObject(url, Model.class);
-
-		List<Comment> comments = new ArrayList<>(model.getData());
-		model.getData().stream().map(Comment::getComments).filter(Objects::nonNull).forEach(m -> comments.addAll(m.getData()));
-		comments.forEach(comment -> comment.setComments(null));
+		List<CommentDao> comments = fetchComments(url);
 
 		comments.forEach(comment -> {
 			WitRequestDao requestDao = new WitRequestDao();
-			requestDao.setId(comment.getId());
+			requestDao.setId(comment.getCommentId());
 			requestDao.setMessage(comment.getMessage());
 
 			RestTemplate rt = new RestTemplate();
@@ -57,6 +54,23 @@ public class HelloController {
 		});
 
 		return comments;
+	}
+
+	private List<CommentDao> fetchComments(String url) {
+		RestTemplate restTemplate = new RestTemplate();
+		Model model = restTemplate.getForObject(url, Model.class);
+
+		List<Comment> comments = new ArrayList<>(model.getData());
+		model.getData().stream().map(Comment::getComments).filter(Objects::nonNull).forEach(m -> comments.addAll(m.getData()));
+
+		return comments.stream().map(c -> new CommentDao(
+			c.getId(),
+			c.getCreatedTime(),
+			c.getMessage(),
+			c.getPermalinkUrl(),
+			c.getLikeCount(),
+			0, null
+		)).collect(Collectors.toList());
 	}
 
 	private String findPageId(String postUrl) throws MalformedURLException {
