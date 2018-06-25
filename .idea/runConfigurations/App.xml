@@ -3,7 +3,7 @@
     <module name="cityhackfb" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="co.blastlab.cityhack.fb.*" />
+        <option name="PATTERN" value="co.blastlab.cityhack.fb.model.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
