@@ -1,5 +1,7 @@
 package co.blastlab.cityhack.fb;
 
+import co.blastlab.cityhack.fb.dao.WitRequestDao;
+import co.blastlab.cityhack.fb.dao.WitResponseDao;
 import co.blastlab.cityhack.fb.model.Comment;
 import co.blastlab.cityhack.fb.model.Model;
 import co.blastlab.cityhack.fb.model.PageId;
@@ -23,6 +25,8 @@ public class HelloController {
 	private static String[] FIELDS = {"id", "created_time", "message", "permalink_url", "like_count"};
 	private static int LIMIT = 100;
 
+	private static String WIT_URL = "http://192.168.43.157:5000/message";
+
 	/**
 	 * Example request: http://localhost:8080/?postUrl=https://www.facebook.com/gdansk/posts/10160555313985424
 	 */
@@ -39,6 +43,18 @@ public class HelloController {
 		List<Comment> comments = new ArrayList<>(model.getData());
 		model.getData().stream().map(Comment::getComments).filter(Objects::nonNull).forEach(m -> comments.addAll(m.getData()));
 		comments.forEach(comment -> comment.setComments(null));
+
+		comments.forEach(comment -> {
+			WitRequestDao requestDao = new WitRequestDao();
+			requestDao.setId(comment.getId());
+			requestDao.setMessage(comment.getMessage());
+
+			RestTemplate rt = new RestTemplate();
+			WitResponseDao response = rt.postForObject(WIT_URL, requestDao, WitResponseDao.class);
+
+			comment.setConfidence(response.getConfidence());
+			comment.setValue(response.getValue());
+		});
 
 		return comments;
 	}

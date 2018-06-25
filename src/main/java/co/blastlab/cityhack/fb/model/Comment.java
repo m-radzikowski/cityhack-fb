@@ -1,5 +1,6 @@
 package co.blastlab.cityhack.fb.model;
 
+import co.blastlab.cityhack.fb.Value;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,4 +17,7 @@ public class Comment {
 	private int likeCount;
 
 	private Model comments;
+
+	private double confidence;
+	private Value value;
 }
