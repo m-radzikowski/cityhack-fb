@@ -9,6 +9,7 @@ import co.blastlab.cityhack.fb.fb.PageId;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
@@ -21,7 +22,8 @@ import java.util.stream.Collectors;
 @RestController
 public class HelloController {
 
-	private static String ACCESS_TOKEN = "EAACEdEose0cBANcltlWeZCfuRoBd5kd19FEO0t5ZA114KAbLJlm7vlPLnGNZAeQK9ZAs60oDkjI9tgm4YUEYxZBfA2pdluJTWE6DBuOz7d0J2EgWUIY0fjGD4ekD0oXvtYDtw3QbuFkPitibFYJ8SrPwEQQaDzR32YggU2EOR1lkBYdV8kEtRKcURDXoUPOoZD";
+	// generate token: https://developers.facebook.com/tools/explorer/
+	private static String ACCESS_TOKEN = "EAACEdEose0cBACEmWVZBvUFaa8UKTqwLsFuhIrZBSTS3DOXaHejJZC7fpEuQ3yOMilLtKe8QWhXTRs6nOTnBiBCy8bUxvX8KL1com6ZBTc8Sus4ert3aBWOeUN6JIJerq9gMRohmulwZAGFzK8zFFZBIVLLbnoDwU7wES2QFLex0LA1Y5K61ZCNYbYotDywmLSwPHLbN4cQ3gZDZD";
 	private static String BASE_URL = "https://graph.facebook.com/v3.0/";
 	private static String COMMENTS_EDGE = "comments";
 	private static String[] FIELDS = {"id", "created_time", "message", "permalink_url", "like_count"};
@@ -34,13 +36,24 @@ public class HelloController {
 	 */
 	@GetMapping("/")
 	public List<CommentDao> index(@RequestParam String postUrl) throws MalformedURLException {
-		String pageId = findPageId(postUrl);
-		String postId = findPostId(postUrl);
+		try {
+			String pageId = findPageId(postUrl);
+			String postId = findPostId(postUrl);
 
-		String url = buildUrl(pageId, postId);
+			String url = buildUrl(pageId, postId);
 
-		List<CommentDao> comments = fetchComments(url);
+			List<CommentDao> comments = fetchComments(url);
 
+			recognizeEmotions(comments);
+
+			return comments;
+		} catch (HttpClientErrorException e) {
+			System.out.println(e.getResponseBodyAsString());
+			throw e;
+		}
+	}
+
+	private void recognizeEmotions(List<CommentDao> comments) {
 		comments.forEach(comment -> {
 			WitRequestDao requestDao = new WitRequestDao();
 			requestDao.setId(comment.getCommentId());
@@ -52,8 +65,6 @@ public class HelloController {
 			comment.setConfidence(response.getConfidence());
 			comment.setValue(response.getValue());
 		});
-
-		return comments;
 	}
 
 	private List<CommentDao> fetchComments(String url) {
