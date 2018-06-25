@@ -1,0 +1,19 @@
+# IntelliJ config
+*.iml
+.idea/*
+!.idea/codeStyles/
+!.idea/copyright/
+!.idea/fileTemplates/
+!.idea/inspectionProfiles/
+!.idea/runConfigurations/
+!.idea/codeStyleSettings.xml
+!.idea/dataSources.xml
+
+# For TeamCity code inspection, if not Maven or Gradle build
+# Make sure all files exists (*.iml may be in .idea or root directory)
+# May be removed if using Maven or Gradle
+!.idea/modules.xml
+!.idea/misc.xml
+!.idea/*.iml
+
+target/
