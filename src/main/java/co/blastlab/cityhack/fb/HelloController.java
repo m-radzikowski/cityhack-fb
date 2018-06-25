@@ -46,7 +46,9 @@ public class HelloController {
 
 			recognizeEmotions(comments);
 
-			return comments;
+			return comments.stream()
+				.filter(c -> !Value.NOT_FOUND.equals(c.getValue()))
+				.collect(Collectors.toList());
 		} catch (HttpClientErrorException e) {
 			System.out.println(e.getResponseBodyAsString());
 			throw e;
