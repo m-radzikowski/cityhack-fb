@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 public class HelloController {
 
 	// generate token: https://developers.facebook.com/tools/explorer/
-	private static String ACCESS_TOKEN = "EAACEdEose0cBACEmWVZBvUFaa8UKTqwLsFuhIrZBSTS3DOXaHejJZC7fpEuQ3yOMilLtKe8QWhXTRs6nOTnBiBCy8bUxvX8KL1com6ZBTc8Sus4ert3aBWOeUN6JIJerq9gMRohmulwZAGFzK8zFFZBIVLLbnoDwU7wES2QFLex0LA1Y5K61ZCNYbYotDywmLSwPHLbN4cQ3gZDZD";
+	private static String ACCESS_TOKEN = "EAACEdEose0cBAPpNR7W06oraiIn17QJc2opKkWUisPBOGfNxiM42UtzDq5hBgZCyUBkskMPVaBUQHGlPqB72HdxKVO7of5ZAZAAx1PQsy2IiZCOqNIIBuWZAIUZCWn5OZCoDZBnKxDGt1Df2oMJ8RMgQhvDQP8xQ34aB4ZCZCUUqhYPS7mt7iM0jYk0qGV9ucZBZBobCpD0ghJpozQZDZD";
 	private static String BASE_URL = "https://graph.facebook.com/v3.0/";
 	private static String COMMENTS_EDGE = "comments";
 	private static String[] FIELDS = {"id", "created_time", "message", "permalink_url", "like_count"};
@@ -32,7 +33,7 @@ public class HelloController {
 	private static String WIT_URL = "http://192.168.43.157:5000/message";
 
 	/**
-	 * Example request: http://localhost:8080/?postUrl=https://www.facebook.com/gdansk/posts/10160555313985424
+	 * Example request: http://localhost:8090/?postUrl=https://www.facebook.com/gdansk/posts/10160555313985424
 	 */
 	@GetMapping("/")
 	public List<CommentDao> index(@RequestParam String postUrl) throws MalformedURLException {
@@ -78,7 +79,7 @@ public class HelloController {
 
 		return comments.stream().map(c -> new CommentDao(
 			c.getId(),
-			c.getCreatedTime(),
+			ZonedDateTime.parse(c.getCreatedTime().substring(0, 22) + ":" + c.getCreatedTime().substring(22)),
 			c.getMessage(),
 			c.getPermalinkUrl(),
 			c.getLikeCount(),
